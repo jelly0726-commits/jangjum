@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>장점 & 단점 카드 (장점 먼저)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #f3e8ff 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 1rem;
+        }
+
+        .reset-btn {
+            background: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            cursor: pointer;
+            font-size: 1rem;
+            transition: box-shadow 0.2s;
+        }
+
+        .reset-btn:hover {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card-container {
+            height: 320px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .card-inner.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 4px solid;
+        }
+
+        .card-front.red { background: #fef2f2; border-color: #fca5a5; }
+        .card-front.orange { background: #fff7ed; border-color: #fdba74; }
+        .card-front.blue { background: #eff6ff; border-color: #93c5fd; }
+        .card-front.purple { background: #faf5ff; border-color: #d8b4fe; }
+        .card-front.green { background: #f0fdf4; border-color: #86efac; }
+
+        .card-back {
+            transform: rotateY(180deg);
+            background: #f3f4f6;
+            border-color: #9ca3af;
+        }
+
+        .card-number-top {
+            text-align: right;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .card-number-top.red { color: #ef4444; }
+        .card-number-top.orange { color: #f97316; }
+        .card-number-top.blue { color: #3b82f6; }
+        .card-number-top.purple { color: #a855f7; }
+        .card-number-top.green { color: #22c55e; }
+
+        .card-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .card-text {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+            white-space: pre-line;
+            line-height: 1.6;
+        }
+
+        .card-text-en {
+            font-size: 0.875rem;
+            color: #6b7280;
+            white-space: pre-line;
+        }
+
+        .card-bottom {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card-badge {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+
+        .card-badge.red { background: #fca5a5; }
+        .card-badge.orange { background: #fdba74; }
+        .card-badge.blue { background: #93c5fd; }
+        .card-badge.purple { background: #d8b4fe; }
+        .card-badge.green { background: #86efac; }
+
+        .card-label {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            .cards-grid {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                gap: 1rem;
+            }
+            .card-container {
+                height: 280px;
+            }
+            .card-text {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>장점 & 단점 카드</h1>
+            <p class="subtitle">카드를 클릭하면 뒷면을 볼 수 있어요!</p>
+            <button class="reset-btn" onclick="resetAll()">🔄 모두 되돌리기</button>
+        </div>
+
+        <div class="cards-grid" id="cardsContainer"></div>
+    </div>
+
+    <script>
+        const cardsData = [
+            { id: 1, strength: "내 의견을\n자신 있게 말해요", strengthEn: "I express myself\nconfidently", weakness: "내 의견을\n강요해요", weaknessEn: "I force my opinion\non others", color: "red" },
+            { id: 2, strength: "늘 한결같아요", strengthEn: "I'm steady and consistent", weakness: "융통성이\n부족해요", weaknessEn: "I lack flexibility", color: "red" },
+            { id: 3, strength: "규칙이나\n약속을 잘 지켜요", strengthEn: "I'm reliable", weakness: "정해진 틀을 깨는 것이\n싫어요", weaknessEn: "I dislike doing things in\na new way", color: "red" },
+            { id: 4, strength: "주도하는 일을\n잘해요", strengthEn: "I'm a good leader", weakness: "주도권을\n쥐려고 해요", weaknessEn: "I try to be dominant", color: "red" },
+            { id: 5, strength: "의지가 강해요", strengthEn: "I have strong will", weakness: "고집이 세요", weaknessEn: "I'm stubborn", color: "red" },
+            { id: 6, strength: "자신감 있게\n행동해요", strengthEn: "I'm confident", weakness: "다른 사람 말을\n잘 안 들어요", weaknessEn: "I do not listen to the\nopinions of others", color: "red" },
+            { id: 7, strength: "보완점을\n잘 찾아내요", strengthEn: "I'm good at finding ways\nto improve things", weakness: "비판적인\n편이에요", weaknessEn: "I'm critical", color: "red" },
+            { id: 8, strength: "일에 대한\n책임감이 강해요", strengthEn: "I have a strong sense of\nresponsibility", weakness: "책임감 때문에\n스트레스를 받아요", weaknessEn: "I'm stressed out\nby responsibility", color: "red" },
+            { id: 9, strength: "정리 정돈을\n잘해요", strengthEn: "I'm good at organizing", weakness: "체계적이지 않은 걸\n못 참아요", weaknessEn: "I can't stand\nbeing disorganized", color: "red" },
+            { id: 10, strength: "자기통제를\n잘해요", strengthEn: "I have self control", weakness: "다른 사람을\n통제하려고 해요", weaknessEn: "I try to control others", color: "red" },
+            { id: 11, strength: "타인을 잘 이해하고\n공감해요", strengthEn: "I empathize with others", weakness: "너무 관대해요", weaknessEn: "I'm too generous", color: "orange" },
+            { id: 12, strength: "다른 사람에게\n친절해요", strengthEn: "I'm kind to other people", weakness: "남에게 잘하려고\n너무 애써요", weaknessEn: "I try too hard to be kind\nto others", color: "orange" },
+            { id: 13, strength: "마음이 따뜻해요", strengthEn: "I have a warm heart", weakness: "지나치게\n배풀어요", weaknessEn: "I give excessive help\nor advice to others", color: "orange" },
+            { id: 14, strength: "분위기를\n좋게 만들어요", strengthEn: "I'm good at lightening\nthe mood", weakness: "어색한 분위기를\n불편해 해요", weaknessEn: "I feel uncomfortable in\nawkward situations", color: "orange" },
+            { id: 15, strength: "의리가 있어요", strengthEn: "I'm loyal", weakness: "지나치게 관계를\n중요하게 생각해요", weaknessEn: "I am overly\nrelationship-oriented", color: "orange" },
+            { id: 16, strength: "칭찬을 잘해요", strengthEn: "I'm good at\ngiving compliments", weakness: "다른 사람에게\n직언을 잘 못해요", weaknessEn: "I'm not good at\nspeaking hurtful truths", color: "orange" },
+            { id: 17, strength: "정서적인 관계를\n중요하게 여겨요", strengthEn: "I value\nemotional relationships", weakness: "인간 관계에서\n상처를 잘 받아요", weaknessEn: "I often get hurt\nin relationships", color: "orange" },
+            { id: 18, strength: "타인의 칭찬과 격려를\n소중하게 여겨요", strengthEn: "I appreciate compliments\n& encouragement", weakness: "다른 사람의\n인정을 원해요", weaknessEn: "I try too hard to get\nrecognition from others", color: "orange" },
+            { id: 19, strength: "이타적이에요", strengthEn: "I put others first", weakness: "남을 배려하다가\n종종 손해봐요", weaknessEn: "I'm self-sacrificing", color: "orange" },
+            { id: 20, strength: "다른 사람을\n잘 도와줘요", strengthEn: "I'm good at\nhelping others", weakness: "쉽게\n거절하지 못해요", weaknessEn: "I have difficulty\nsaying no", color: "orange" },
+            { id: 21, strength: "분석적으로\n생각해요", strengthEn: "I can think analytically", weakness: "상상력이\n부족해요", weaknessEn: "I lack imagination", color: "blue" },
+            { id: 22, strength: "철저하게 일을 해요", strengthEn: "I do things to\na high standard", weakness: "지나치게\n일중심적이에요", weaknessEn: "I'm workaholic", color: "blue" },
+            { id: 23, strength: "객관적으로\n판단해요", strengthEn: "I can judge objectively", weakness: "사실만\n중요하게 생각해요", weaknessEn: "I value only facts", color: "blue" },
+            { id: 24, strength: "효율적으로\n일해요", strengthEn: "I work efficiently", weakness: "늘 손익을 따져요", weaknessEn: "I think in terms\nof what I can gain", color: "blue" },
+            { id: 25, strength: "독립적으로 일해요", strengthEn: "I can work independently", weakness: "뭐든 혼자\n하려고 해요", weaknessEn: "I try to work alone", color: "blue" },
+            { id: 26, strength: "미리 준비를 잘해요", strengthEn: "I'm well prepared", weakness: "계획에\n집착해요", weaknessEn: "I'm obsessed\nwith planning", color: "blue" },
+            { id: 27, strength: "감정에 별로\n휘둘리지 않아요", strengthEn: "I'm not very emotional", weakness: "타인의 감정에\n민감하지 않아요", weaknessEn: "I'm not sensitive to\nother people's feelings", color: "blue" },
+            { id: 28, strength: "이성적으로\n행동해요", strengthEn: "I act rationally", weakness: "다른 사람에게\n냉정해요", weaknessEn: "I'm cold to others", color: "blue" },
+            { id: 29, strength: "늘 차분해요", strengthEn: "I'm calm", weakness: "재미나 유머감각이\n없어요", weaknessEn: "I do not have\na sense of humor", color: "blue" },
+            { id: 30, strength: "깊이 생각하고\n행동해요", strengthEn: "I think deeply first,\nand then act", weakness: "결정하는데 시간이\n오래 걸려요", weaknessEn: "I take too much time to\nmake decisions", color: "blue" },
+            { id: 31, strength: "새로운 일을\n잘 시작해요", strengthEn: "I'm good at\ntrying new things", weakness: "쉽게\n관심을 잃어요", weaknessEn: "I easily lose interest", color: "purple" },
+            { id: 32, strength: "도전을 즐겨요", strengthEn: "I enjoy challenging\nmyself", weakness: "무모한\n행동을 해요", weaknessEn: "I act without thinking", color: "purple" },
+            { id: 33, strength: "관심 있는 일에\n몰입을 잘해요", strengthEn: "I'm easily absorbed in\nwhat I like", weakness: "좋아하는 일만\n하려고 해요", weaknessEn: "I'm only interested in\nonly what I like", color: "purple" },
+            { id: 34, strength: "활동적이에요", strengthEn: "I'm energetic", weakness: "쉽게\n지루함을 느껴요", weaknessEn: "I'm easily bored", color: "purple" },
+            { id: 35, strength: "좋아하고 싫어하는\n것이 분명해요", strengthEn: "I know my likes\nand dislikes", weakness: "너무\n개성이 강해요", weaknessEn: "I have\na unique personality", color: "purple" },
+            { id: 36, strength: "자유로움을\n추구해요", strengthEn: "I pursue freedom", weakness: "구속받는 걸\n싫어해요", weaknessEn: "I dislike being\ncontrolled", color: "purple" },
+            { id: 37, strength: "순발력이\n뛰어나요", strengthEn: "I react quickly", weakness: "깊이\n생각하지 않아요", weaknessEn: "I do not ponder", color: "purple" },
+            { id: 38, strength: "감정을\n잘 표현해요", strengthEn: "I express my feelings well", weakness: "감정을\n통제하기 어려워요", weaknessEn: "I have difficulty\ncontrolling my emotion", color: "purple" },
+            { id: 39, strength: "기발한 생각을\n잘해요", strengthEn: "I'm good at\ncreative thinking", weakness: "딴 생각을\n자주해요", weaknessEn: "I often daydream", color: "purple" },
+            { id: 40, strength: "변화를 즐겨요", strengthEn: "I enjoy changes", weakness: "변덕스러워요", weaknessEn: "I lack consistency", color: "purple" },
+            { id: 41, strength: "협조를 잘해요", strengthEn: "I'm good at cooperating", weakness: "내 의견을 적극적으로\n말하지 않아요", weaknessEn: "I do not strongly assert\nmy opinions", color: "green" },
+            { id: 42, strength: "평화로운 관계를\n원해요", strengthEn: "I try to keep good\nrelationships with others", weakness: "갈등을\n회피해요", weaknessEn: "I avoid conflict", color: "green" },
+            { id: 43, strength: "다른 사람의 의견을\n잘 참고해요", strengthEn: "I consider\nother people's opinions", weakness: "타인에게\n의존해요", weaknessEn: "I'm dependent on others", color: "green" },
+            { id: 44, strength: "겸손해요", strengthEn: "I'm humble", weakness: "자신감이\n부족해요", weaknessEn: "I lack confidence", color: "green" },
+            { id: 45, strength: "조심스럽게\n행동해요", strengthEn: "I act carefully", weakness: "의심이 많아요", weaknessEn: "I'm suspicious", color: "green" },
+            { id: 46, strength: "큰 실수를\n하지 않아요", strengthEn: "I do not make\nbig mistakes", weakness: "미리 걱정을\n많이 해요", weaknessEn: "I obsess over what\ncould go wrong", color: "green" },
+            { id: 47, strength: "예의 바르게\n행동해요", strengthEn: "I'm polite", weakness: "상대의 눈치를\n많이 봐요", weaknessEn: "I'm care too much about\nwhat other people think", color: "green" },
+            { id: 48, strength: "참을성이 있어요", strengthEn: "I'm patient", weakness: "하고 싶은 것을\n억제해요", weaknessEn: "I suppress\nwhat I want to do", color: "green" },
+            { id: 49, strength: "예의 바르게\n행동해요", strengthEn: "I'm polite", weakness: "부끄러움이\n많아요", weaknessEn: "I'm shy", color: "green" },
+            { id: 50, strength: "남에게 피해를\n주지 않아요", strengthEn: "I do not harm others", weakness: "나를 잘\n드러내지 않아요", weaknessEn: "I try not to stand out", color: "green" }
+        ];
+
+        function createCard(card) {
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'card-container';
+            cardDiv.onclick = function() { flipCard(card.id); };
+            
+            cardDiv.innerHTML = `
+                <div class="card-inner" id="card-${card.id}">
+                    <!-- 앞면 - 장점 -->
+                    <div class="card-face card-front ${card.color}">
+                        <div class="card-number-top ${card.color}">${card.id}</div>
+                        <div class="card-content">
+                            <div>
+                                <div class="card-text">${card.strength}</div>
+                                <div class="card-text-en">${card.strengthEn}</div>
+                            </div>
+                        </div>
+                        <div class="card-label">Strength</div>
+                    </div>
+                    
+                    <!-- 뒷면 - 단점 -->
+                    <div class="card-face card-back">
+                        <div class="card-content">
+                            <div>
+                                <div class="card-text">${card.weakness}</div>
+                                <div class="card-text-en">${card.weaknessEn}</div>
+                            </div>
+                        </div>
+                        <div class="card-bottom">
+                            <div class="card-badge ${card.color}">${card.id}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return cardDiv;
+        }
+
+        function flipCard(id) {
+            const card = document.getElementById('card-' + id);
+            card.classList.toggle('flipped');
+        }
+
+        function resetAll() {
+            const cards = document.querySelectorAll('.card-inner');
+            cards.forEach(card => {
+                card.classList.remove('flipped');
+            });
+        }
+
+        // 페이지 로드 시 카드 생성
+        window.onload = function() {
+            const container = document.getElementById('cardsContainer');
+            cardsData.forEach(card => {
+                container.appendChild(createCard(card));
+            });
+        };
+    </script>
+</body>
+</html>
